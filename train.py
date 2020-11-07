@@ -5,6 +5,7 @@ import torch
 
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
+from torchvision import transforms
 
 import matplotlib.image as mpimg
 from skimage.measure import compare_psnr, compare_ssim
@@ -87,13 +88,13 @@ def train():
             optimizer.step()
             loss_sum += loss.item()
 
-            if (i % 100 == 0) and (i != 0) :
+            if (i % 1 == 0) and (i != 0) :
                 wandb.log({"epoch": epoch, "loss": loss}, step=num_step)
-                wandb.log({"examples": [wandb.Image(transforms.ToPILImage()(input.cpu()),
+                wandb.log({"examples": [wandb.Image(transforms.ToPILImage()(input.cpu()[0]),
                                                                   caption="noise"),
-                                        wandb.Image(transforms.ToPILImage()(output.cpu()),
+                                        wandb.Image(transforms.ToPILImage()(output.cpu()[0]),
                                                                  caption="output"),
-                                        wandb.Image(transforms.ToPILImage()(label.cpu()),
+                                        wandb.Image(transforms.ToPILImage()(label.cpu()[0]),
                                                                  caption="GT"),]}
                             )
                 loss_avg = loss_sum / 100
