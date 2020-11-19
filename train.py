@@ -88,7 +88,7 @@ def train():
             optimizer.step()
             loss_sum += loss.item()
 
-            if (i % 1 == 0) and (i != 0) :
+            if (i % 1000 == 0) and (i != 0) :
                 wandb.log({"epoch": epoch, "loss": loss}, step=num_step)
                 wandb.log({"examples": [wandb.Image(transforms.ToPILImage()(input.cpu()[0]),
                                                                   caption="noise"),
@@ -104,11 +104,11 @@ def train():
                 start_time = time.time()
 
         # save model
-        if epoch % save_epoch == 0:
-            if torch.cuda.device_count() > 1:
-                torch.save(model.module.state_dict(), os.path.join(ckpt_dir, 'model_%04d_dict.pth' % (epoch+1)))
-            else:
-                torch.save(model.state_dict(), os.path.join(ckpt_dir, 'model_%04d_dict.pth' % (epoch+1)))
+        # if epoch % save_epoch == 0:
+        #     if torch.cuda.device_count() > 1:
+        #         torch.save(model.module.state_dict(), os.path.join(ckpt_dir, 'model_%04d_dict.pth' % (epoch+1)))
+        #     else:
+        #         torch.save(model.state_dict(), os.path.join(ckpt_dir, 'model_%04d_dict.pth' % (epoch+1)))
 
 
 if __name__ == "__main__":
@@ -116,5 +116,5 @@ if __name__ == "__main__":
     # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
     device = torch.device('cuda')
-    create_dir(ckpt_dir)
+    #create_dir(ckpt_dir)
     train()

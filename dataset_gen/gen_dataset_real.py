@@ -82,9 +82,7 @@ def gen_dataset(src_files, dst_path):
 if __name__ == "__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = "1"
     src_path_list = ["./train/SIDD/SIDD_Medium_Srgb/Data/",
-                    "./train/RENOIR/Mi3_Aligned/",
-                    "./train/RENOIR/T3i_Aligned/",
-                    "./train/RENOIR/S90_Aligned/",
+                    "./train/RENOIR/T3i_Aligned/"
                     ]
     dst_path = "./train/SIDD_RENOIR_h5/"
 
