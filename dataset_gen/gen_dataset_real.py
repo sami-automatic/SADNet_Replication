@@ -35,6 +35,7 @@ def gen_dataset(src_files, dst_path):
     count = 0
     for src_path in src_path_list:
         file_path = glob.glob(src_path+'*')
+        print(file_path)
         for file_name in file_path:
             if 'SIDD' in file_name:
                 gt_imgs = glob.glob(file_name+'/*GT*.PNG')
@@ -81,10 +82,9 @@ def gen_dataset(src_files, dst_path):
 
 if __name__ == "__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-    src_path_list = ["./train/SIDD/SIDD_Medium_Srgb/Data/",
-                    "./train/RENOIR/T3i_Aligned/"
-                    ]
-    dst_path = "./train/SIDD_RENOIR_h5/"
+    src_path_list = ["/home/sam/Downloads/RENOIR_T3i_Aligned/",
+                    "/home/sam/Downloads/SIDD_Small_sRGB_Only/Data/"]
+    dst_path = "/home/sam/Documents/replicateSADNet/dataset/"
 
     create_dir(dst_path)
     print("start...")

@@ -16,10 +16,11 @@ from utils import *
 from models.sadNet import SADNET
 
 
-src_path = "./dataset/train/SIDD_RENOIR_h5/train.h5"
+src_path = "./dataset/train.h5"
 ckpt_dir = "./ckpt/SADNET/"
 
 save_epoch = 1 #save model per every N epochs
+wandb_update = 10
 patch_size = 128
 batch_size = 2
 val_patch_size = 512
@@ -88,11 +89,11 @@ def train():
             optimizer.step()
             loss_sum += loss.item()
 
-            if (i % 1000 == 0) and (i != 0) :
+            if (i % wandb_update == 0) and (i != 0) :
                 wandb.log({"epoch": epoch, "loss": loss}, step=num_step)
                 wandb.log({"examples": [wandb.Image(transforms.ToPILImage()(input.cpu()[0]),
                                                                   caption="noise"),
-                                        wandb.Image(transforms.ToPILImage()(output.cpu()[0]),
+                                        wandb.Image(transforms.ToPILImage()(torch.clamp(output, min=0., max=1.).cpu()[0]),
                                                                  caption="output"),
                                         wandb.Image(transforms.ToPILImage()(label.cpu()[0]),
                                                                  caption="GT"),]}
@@ -103,12 +104,12 @@ def train():
                     epoch + 1, N_EPOCH, i + 1, len(dataloader), loss_avg, time.time()-start_time))
                 start_time = time.time()
 
-        # save model
-        # if epoch % save_epoch == 0:
-        #     if torch.cuda.device_count() > 1:
-        #         torch.save(model.module.state_dict(), os.path.join(ckpt_dir, 'model_%04d_dict.pth' % (epoch+1)))
-        #     else:
-        #         torch.save(model.state_dict(), os.path.join(ckpt_dir, 'model_%04d_dict.pth' % (epoch+1)))
+        #save model
+        if epoch % save_epoch == 0:
+            if torch.cuda.device_count() > 1:
+                torch.save(model.module.state_dict(), os.path.join(ckpt_dir, 'model_dict.pth'))
+            else:
+                torch.save(model.state_dict(), os.path.join(ckpt_dir, 'model_dict.pth'))
 
 
 if __name__ == "__main__":
@@ -116,5 +117,5 @@ if __name__ == "__main__":
     # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
     device = torch.device('cuda')
-    #create_dir(ckpt_dir)
+    create_dir(ckpt_dir)
     train()
