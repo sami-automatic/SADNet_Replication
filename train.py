@@ -16,13 +16,13 @@ from utils import *
 from models.sadNet import SADNET
 
 
-src_path = "./dataset/train.h5"
+src_path = "/media/birdortyedi/e5042b8f-ca5e-4a22-ac68-7e69ff648bc4/SADNet-data/train.h5"
 ckpt_dir = "./ckpt/SADNET/"
 
 save_epoch = 1 #save model per every N epochs
 wandb_update = 10
 patch_size = 128
-batch_size = 2
+batch_size = 32
 val_patch_size = 512
 
 lr = 1e-4
@@ -78,7 +78,7 @@ def train():
             if torch.cuda.is_available():
                 input, label = input.to(device), label.to(device) #input.cuda(), label.cuda()
             input, label = Variable(input), Variable(label)
-
+            print(input.size(), label.size())
             model.train()
             model.zero_grad()
             optimizer.zero_grad()

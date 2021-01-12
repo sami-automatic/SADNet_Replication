@@ -9,7 +9,7 @@ from modules.blocks import ResBlock, RSABlock, OffsetBlock, ContextBlock
 class SADNET(nn.Module):
 
     def __init__(self, n_channel=32, offset_n_channel=32):
-        super(SADNET).__init__()
+        super(SADNET, self).__init__()
 
         self.conv1 = nn.Conv2d(3, n_channel, kernel_size=1, stride=1)
         self.rb1 = ResBlock(n_channel, n_channel)
@@ -76,7 +76,7 @@ class SADNET(nn.Module):
         dconv3 = self.up3_1(decoded2)
         concat3 = torch.cat([dconv3, conv1],1)
         concat3 = F.leaky_relu(self.up3_2(concat3),  negative_slope=0.2, inplace=True)
-        L1_offset = self.offset3(L2_offset, concat3)
+        L1_offset = self.offset3(concat3, L2_offset)
         decoded3 = self.rsab3(concat3, L1_offset)
 
         out = self.out(decoded3) + x
@@ -85,9 +85,9 @@ class SADNET(nn.Module):
 
 
 if __name__ == '__main__':
-    net = SADNET()
+    net = SADNET().cuda()
 
-    img = torch.rand(1, 300, 300, 3)#patch base ? *16
+    img = torch.rand(8, 3, 64, 64).cuda() #patch base ? *16
 
     output = net(img)
     print(output.shape)
