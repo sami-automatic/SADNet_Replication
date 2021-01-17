@@ -37,6 +37,36 @@ model.load_state_dict(model_dict)
 model = model.cuda()
 model.eval()
 
+def bundle_submissions_srgb(submission_folder):
+    '''
+    Bundles submission data for sRGB denoising
+    
+    submission_folder Folder where denoised images reside
+
+    Output is written to <submission_folder>/bundled/. Please submit
+    the content of this folder.
+    '''
+    out_folder = os.path.join(submission_folder, "bundled/")
+    try:
+        os.mkdir(out_folder)
+    except:pass
+    israw = False
+    eval_version="1.0"
+
+    for i in range(50):
+        Idenoised = np.zeros((20,), dtype=np.object)
+        for bb in range(20):
+            filename = '%04d_%02d.mat'%(i+1,bb+1)
+            s = sio.loadmat(os.path.join(submission_folder,filename))
+            Idenoised_crop = s["Idenoised_crop"]
+            Idenoised[bb] = Idenoised_crop
+        filename = '%04d.mat'%(i+1)
+        sio.savemat(os.path.join(out_folder, filename),
+                    {"Idenoised": Idenoised,
+                     "israw": israw,
+                     "eval_version": eval_version},
+                    )
+
 
 def eval():
     psnr_lst, ssim_lst = list(), list()
