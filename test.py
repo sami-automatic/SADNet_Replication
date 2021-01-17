@@ -1,8 +1,11 @@
+import os
+
+import h5py
 import torch
 import numpy as np
 import glog as log
 from torchvision import transforms
-
+import skimage.io as sio
 from datasets import SIDDTest
 from sadNet import SADNET
 from SSIM import SSIM
@@ -59,7 +62,7 @@ def eval():
             ssim = SSIM(gt, prediction).item()
             ssim_lst.append(ssim)
 
-            psnr = PSNR(255.*gt, 255.*prediction).item()
+            psnr = PSNR(255. * gt, 255. * prediction).item()
             psnr_lst.append(psnr)
 
             # log.info(" \tSSIM: {}\tPSNR: {}".format(batch_idx, len(image_loader), round(ssim, 3), round(psnr, 3)))
@@ -67,7 +70,7 @@ def eval():
     print(results)
 
 
-def eval_DND( data_folder, out_folder):
+def eval_DND(data_folder, out_folder, is_save=True):
     '''
     Utility function for denoising all bounding boxes in all sRGB images of
     the DND dataset.
@@ -78,39 +81,44 @@ def eval_DND( data_folder, out_folder):
     data_folder   Folder where the DND dataset resides
     out_folder    Folder where denoised output should be written to
     '''
-    try:
-        os.makedirs(out_folder)
-    except:pass
-
+    os.makedirs(out_folder, exist_ok=True)
+    psnr_lst, ssim_lst = list(), list()
     print('model loaded\n')
     # load info
     infos = h5py.File(os.path.join(data_folder, 'info.mat'), 'r')
     info = infos['info']
     bb = info['boundingboxes']
     print('info loaded\n')
+    mat_folder = os.path.join(data_folder, 'images_srgb')
     # process data
-    for i in range(50):
-        filename = os.path.join(data_folder, 'images_srgb', '%04d.mat'%(i+1))
-        img = h5py.File(filename, 'r')
+    for i, filename in enumerate(sorted(os.listdir(mat_folder))):
+        img = h5py.File(os.path.join(mat_folder, filename), 'r')
         Inoisy = np.float32(np.array(img['InoisySRGB']).T)
         # bounding box
         ref = bb[0][i]
         boxes = np.array(info[ref]).T
         for k in range(20):
-            idx = [int(boxes[k,0]-1),int(boxes[k,2]),int(boxes[k,1]-1),int(boxes[k,3])]
-            Inoisy_crop = Inoisy[idx[0]:idx[1],idx[2]:idx[3],:].copy()
-            H = Inoisy_crop.shape[0]
-            W = Inoisy_crop.shape[1]
-            
-            for yy in range(2):
-                for xx in range(2):
-                    Idenoised_crop = model(Inoisy_crop)
+            idx = [int(boxes[k, 0] - 1), int(boxes[k, 2]), int(boxes[k, 1] - 1), int(boxes[k, 3])]
+            img_noisy_cropped = Inoisy[idx[0]:idx[1], idx[2]:idx[3], :].copy()
+            print(img_noisy_cropped.shape)
+
+            img_denoised_cropped = model(torch.tensor(img_noisy_cropped).permute(2, 0, 1).unsqueeze(0).cuda())
+            img_denoised_cropped = torch.clamp(img_denoised_cropped, max=1.0, min=0.0)
+
+            img_noisy_cropped = torch.tensor(img_noisy_cropped).permute(2, 0, 1)
             # save denoised data
-            Idenoised_crop = np.float32(Idenoised_crop)
-            save_file = os.path.join(out_folder, '%04d_%02d.mat'%(i+1,k+1))
-            sio.savemat(save_file, {'Idenoised_crop': Idenoised_crop})
-            print('%s crop %d/%d' % (filename, k+1, 20))
-        print('[%d/%d] %s done\n' % (i+1, 50, filename))
+            save_folder = os.path.join(out_folder, "{}".format(i+1))
+            os.makedirs(save_folder, exist_ok=True)
+            save_denoised_file = os.path.join(save_folder, "{}.png".format(k + 1))
+            save_noisy_file = os.path.join(save_folder, "{}_noisy.png".format(k + 1))
+
+            if is_save:
+                transforms.ToPILImage()(img_denoised_cropped.squeeze(0).cpu()).save(save_denoised_file)
+                transforms.ToPILImage()(img_noisy_cropped).save(save_noisy_file)
+            print('%s crop %d/%d' % (filename, k + 1, 20))
+        print('[%d/%d] %s done\n' % (i + 1, 50, filename))
+
 
 if __name__ == '__main__':
-    #eval()
+    # eval()
+    eval_DND("/media/birdortyedi/e5042b8f-ca5e-4a22-ac68-7e69ff648bc4/SADNet-data/DND", "./ckpt/SADNET/outputs", False)
