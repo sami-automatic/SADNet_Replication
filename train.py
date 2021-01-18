@@ -38,12 +38,25 @@ cfg = dict(
     dataset="RENOIR and SIDD"
     )
 
-def train():
+def train(real):
     wandb.init(project='sad_net_replicate', config=cfg)
-    
-    # Load dataset
-    dataset = Dataset_h5_real(src_path, patch_size=patch_size, train=True)
-    dataloader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)
+
+    if real:
+        dataset = Dataset_h5_real(src_path, patch_size=patch_size, train=True)
+        dataloader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)
+    else:
+        dataset = Dataset_from_h5(src_path, sigma=50, gray=False,
+                                  transform=transforms.Compose(
+                                      [transforms.RandomCrop((128, 128)),
+                                       transforms.RandomHorizontalFlip(),
+                                       transforms.RandomVerticalFlip(),
+                                       transforms.Lambda(lambda img: RandomRot(img)),
+                                       transforms.ToTensor()
+                                       # transforms.Normalize(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0])
+                                       ]),
+                                  )
+        dataloader = DataLoader(dataset=dataset, batch_size=16, shuffle=True, num_workers=4,
+                                drop_last=True)
     
     # Build model
     model = SADNET(n_channel, offset_channel)
