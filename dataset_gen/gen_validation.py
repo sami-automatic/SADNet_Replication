@@ -4,9 +4,11 @@ import os
 import numpy as np
 import glob
 
+
 def create_dir(path):
     if not os.path.exists(path):
         os.makedirs(path)
+
 
 def crop_patch(img, img_size=(512, 512), patch_size=(150, 150), stride=150, random_crop=False):
     count = 0
@@ -26,8 +28,8 @@ def crop_patch(img, img_size=(512, 512), patch_size=(150, 150), stride=150, rand
 
     return patch_list
 
-def gen_dataset_h5(gt_path, in_path, test_items, dst_path):
 
+def gen_dataset_h5(gt_path, in_path, test_items, dst_path):
     gt_folder_list = []
     in_folder_list = []
 
@@ -51,11 +53,11 @@ def gen_dataset_h5(gt_path, in_path, test_items, dst_path):
             gt = np.array(Image.open(gt_imgs[ind]))
             noisy = np.array(Image.open(noisy_imgs[ind]))
             img = np.concatenate([noisy, gt], 2)
-            img = img[0:(img.shape[0]//8)*8, 0:(img.shape[1]//8)*8]
+            img = img[0:(img.shape[0] // 8) * 8, 0:(img.shape[1] // 8) * 8]
             [h, w, c] = img.shape
 
             data = img.copy()
-            h5f.create_dataset(str(count), shape=(h,w,c), data=data)
+            h5f.create_dataset(str(count), shape=(h, w, c), data=data)
             count += 1
     h5f.close()
 

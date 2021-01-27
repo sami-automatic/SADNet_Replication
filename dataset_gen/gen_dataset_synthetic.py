@@ -4,9 +4,11 @@ import os
 import numpy as np
 import glob
 
+
 def create_dir(path):
     if not os.path.exists(path):
         os.makedirs(path)
+
 
 def crop_patch(img, img_size=(512, 512), patch_size=(150, 150), stride=150, random_crop=False):
     count = 0
@@ -29,7 +31,7 @@ def crop_patch(img, img_size=(512, 512), patch_size=(150, 150), stride=150, rand
 
 def gen_dataset(src_files, dst_path):
     create_dir(dst_path)
-    h5py_name = dst_path + "train.h5"
+    h5py_name = dst_path + "train_div2k.h5"
     h5f = h5py.File(h5py_name, 'w')
 
     for i in range(len(src_files)):
@@ -40,15 +42,14 @@ def gen_dataset(src_files, dst_path):
 
         for num in range(len(patch_list)):
             data = patch_list[num].copy()
-            h5f.create_dataset(str(i)+'_'+str(num), shape=(300,300,3), data=data)
+            h5f.create_dataset(str(i) + '_' + str(num), shape=(300, 300, 3), data=data)
     h5f.close()
-
 
 
 if __name__ == "__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-    src_path = "./train/DIV2K_train_HR/"
-    dst_path = "./train/DIV2K_h5/"
+    src_path = "/media/birdortyedi/e5042b8f-ca5e-4a22-ac68-7e69ff648bc4/SADNet-data/DIV2K_train_HR/"
+    dst_path = "/media/birdortyedi/e5042b8f-ca5e-4a22-ac68-7e69ff648bc4/SADNet-data/"
 
     src_files = glob.glob(src_path + "*.png")
     print("start...")
