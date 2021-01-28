@@ -48,8 +48,8 @@ def gen_dataset(src_files, dst_path):
 
 if __name__ == "__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-    src_path = "/media/birdortyedi/e5042b8f-ca5e-4a22-ac68-7e69ff648bc4/SADNet-data/DIV2K_train_HR/"
-    dst_path = "/media/birdortyedi/e5042b8f-ca5e-4a22-ac68-7e69ff648bc4/SADNet-data/"
+    src_path = "/SADNet-data/DIV2K_train_HR/"
+    dst_path = "/SADNet-data/"
 
     src_files = glob.glob(src_path + "*.png")
     print("start...")

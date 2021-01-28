@@ -79,12 +79,11 @@ def gen_dataset(src_files, dst_path):
     h5f.close()
 
 
-
 if __name__ == "__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-    src_path_list = ["/home/sam/Downloads/RENOIR_T3i_Aligned/",
-                    "/home/sam/Downloads/SIDD_Small_sRGB_Only/Data/"]
-    dst_path = "/home/sam/Documents/replicateSADNet/dataset/"
+    src_path_list = ["/Downloads/RENOIR_T3i_Aligned/",
+                    "/Downloads/SIDD_Small_sRGB_Only/Data/"]
+    dst_path = "/Documents/replicateSADNet/dataset/"
 
     create_dir(dst_path)
     print("start...")
