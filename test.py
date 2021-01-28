@@ -85,17 +85,18 @@ def eval(model, image_loader, out_img_folder):
             prediction = torch.clamp(prediction, max=1., min=0.)
             # out[:, :, i:i+128, j:j+128] = prediction
 
-            os.makedirs(out_img_folder.format("sidd", "samples"), exist_ok=True)
+            os.makedirs(os.path.join(out_img_folder.format("sidd", "samples"), str(batch_idx)), exist_ok=True)
 
             ssim = SSIM(gt, prediction).item()
             ssim_lst.append(ssim)
 
             psnr = PSNR(255. * gt, 255. * prediction).item()
             psnr_lst.append(psnr)
+            noisy_psnr = PSNR(255. * gt, 255. * noisy).item()
 
-            transforms.ToPILImage()(prediction[0].cpu()).save(os.path.join(out_img_folder.format("sidd", "samples"), f"out-{batch_idx}.png"))
-            # transforms.ToPILImage()(gt_patch[0].cpu()).save(os.path.join(out_img_folder.format("sidd", "samples"), f"gt-{batch_idx}-{i}-{j}.png"))
-            # transforms.ToPILImage()(noisy_patch[0].cpu()).save(os.path.join(out_img_folder.format("sidd", "samples"), f"noisy-{batch_idx}-{i}-{j}.png"))
+            transforms.ToPILImage()(prediction[0].cpu()).save(os.path.join(out_img_folder.format("sidd", "samples"), str(batch_idx), f"out-{psnr}.png"))
+            transforms.ToPILImage()(gt[0].cpu()).save(os.path.join(out_img_folder.format("sidd", "samples"), str(batch_idx), "gt.png"))
+            transforms.ToPILImage()(noisy[0].cpu()).save(os.path.join(out_img_folder.format("sidd", "samples"), str(batch_idx), f"noisy-{noisy_psnr}.png"))
 
             # to_pil = transforms.ToPILImage()
             # cropper = transforms.FiveCrop(128)
@@ -254,18 +255,18 @@ def eval_DND(data_folder, out_folder, is_save=True):
 
 
 if __name__ == '__main__':
-    # real_model_path = "ckpt/SADNET/final_model_sadnet.pth"
-    # sidd_dataset = SIDDTest("ValidationGtBlocksSrgb.mat", "ValidationNoisyBlocksSrgb.mat")
-    # sidd_image_loader = torch.utils.data.DataLoader(dataset=sidd_dataset, batch_size=1, shuffle=False)
-    # model_path = real_model_path
-    # out_img_folder = "ckpt/SADNET/{}/{}/out-imgs"
-    #
-    # model = SADNET()
-    # model_dict = torch.load(model_path)
-    # model.load_state_dict(model_dict)
-    # model = model.cuda()
-    # model.eval()
-    # eval(model, sidd_image_loader, out_img_folder)
+    real_model_path = "ckpt/SADNET/final_model_sadnet.pth"
+    sidd_dataset = SIDDTest("ValidationGtBlocksSrgb.mat", "ValidationNoisyBlocksSrgb.mat")
+    sidd_image_loader = torch.utils.data.DataLoader(dataset=sidd_dataset, batch_size=1, shuffle=False)
+    model_path = real_model_path
+    out_img_folder = "ckpt/SADNET/{}/{}/out-imgs"
+
+    model = SADNET()
+    model_dict = torch.load(model_path)
+    model.load_state_dict(model_dict)
+    model = model.cuda()
+    model.eval()
+    eval(model, sidd_image_loader, out_img_folder)
 
     # for sig in [30, 50, 70]:
     #     synt_model_path = "ckpt/SADNET-synt/{}/model_dict_sigma{}_epoch195.pth".format(str(sig), str(sig))
@@ -289,30 +290,33 @@ if __name__ == '__main__':
     #
     #     eval_Kodak(kodak_image_loader, sig)
     #     eval_bsd(bsd68_image_loader, sig)
-    synt_model_path = "ckpt/SADNET-synt/{}/model_dict_sigma{}_epoch195.pth".format(str(50), str(50))
-    model = SADNET()
-    model_dict = torch.load(synt_model_path)
-    model.load_state_dict(model_dict)
-    model = model.cuda()
-    model.eval()
+    # synt_model_path = "ckpt/SADNET-synt/{}/model_dict_sigma{}_epoch195.pth".format(str(50), str(50))
+    # model = SADNET()
+    # model_dict = torch.load(synt_model_path)
+    # model.load_state_dict(model_dict)
+    # model = model.cuda()
+    # model.eval()
+    #
+    # from PIL import Image
+    # im = Image.open("/home/birdortyedi/Downloads/kodak.png").convert("RGB")
+    # im = transforms.ToTensor()(im).unsqueeze(0).cuda()
+    # noise = torch.normal(torch.zeros(im.size()), 50 / 255.0).cuda()
+    # noisy = im + noise
+    # noisy = torch.clamp(noisy, 0.0, 1.0)
+    #
+    # start = datetime.now()
+    # prediction = model(noisy)
+    # time = datetime.now() - start
+    # prediction = torch.clamp(prediction, max=1., min=0.)
+    # psnr = PSNR(255. * im, 255. * prediction).item()
+    # print("PSNR: {}".format(psnr))
+    # psnr = PSNR(255. * im, 255. * noisy).item()
+    # print("PSNR noisy: {}".format(psnr))
+    # out_img_folder = "ckpt/SADNET/{}/{}/samples"
+    # os.makedirs(out_img_folder.format("kodak", 50), exist_ok=True)
 
-    from PIL import Image
-    im = Image.open("/home/birdortyedi/Downloads/kodak.png").convert("RGB")
-    im = transforms.ToTensor()(im).unsqueeze(0).cuda()
-    noise = torch.normal(torch.zeros(im.size()), 50 / 255.0).cuda()
-    noisy = im + noise
-    noisy = torch.clamp(noisy, 0.0, 1.0)
-
-    start = datetime.now()
-    prediction = model(noisy)
-    time = datetime.now() - start
-    prediction = torch.clamp(prediction, max=1., min=0.)
-
-    out_img_folder = "ckpt/SADNET/{}/{}/samples"
-    os.makedirs(out_img_folder.format("kodak", 50), exist_ok=True)
-
-    transforms.ToPILImage()(prediction[0].cpu()).save(os.path.join(out_img_folder.format("kodak", 50), "out.png"))
-    transforms.ToPILImage()(im[0].cpu()).save(os.path.join(out_img_folder.format("kodak", 50), "gt.png"))
-    transforms.ToPILImage()(noisy[0].cpu()).save(os.path.join(out_img_folder.format("kodak", 50), "noisy.png"))
+    # transforms.ToPILImage()(prediction[0].cpu()).save(os.path.join(out_img_folder.format("kodak", 50), "out.png"))
+    # transforms.ToPILImage()(im[0].cpu()).save(os.path.join(out_img_folder.format("kodak", 50), "gt.png"))
+    # transforms.ToPILImage()(noisy[0].cpu()).save(os.path.join(out_img_folder.format("kodak", 50), "noisy.png"))
     # eval_DND("/media/birdortyedi/e5042b8f-ca5e-4a22-ac68-7e69ff648bc4/SADNet-data/DND", "./ckpt/SADNET/outputs")
     # bundle_submissions_srgb("./ckpt/SADNET/outputs")
