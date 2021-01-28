@@ -312,5 +312,5 @@ if __name__ == '__main__':
     psnr = PSNR(255. * im, 255. * noisy).item()
     print("PSNR noisy: {}".format(psnr))
 
-    # eval_DND("/media/birdortyedi/e5042b8f-ca5e-4a22-ac68-7e69ff648bc4/SADNet-data/DND", "./ckpt/SADNET/outputs")
+    # eval_DND("/SADNet-data/DND", "./ckpt/SADNET/outputs")
     # bundle_submissions_srgb("./ckpt/SADNET/outputs")
