@@ -130,8 +130,6 @@ class DynamicGNoise(nn.Module):
 
 
 def eval_bsd(image_loader, sig=30):
-    to_pil = transforms.ToPILImage()
-    cropper = transforms.TenCrop(128)
     psnr_lst, ssim_lst = list(), list()
     time_lst = list()
     with torch.no_grad():
@@ -167,8 +165,6 @@ def eval_bsd(image_loader, sig=30):
 
 
 def eval_Kodak(image_loader, sig=30):
-    to_pil = transforms.ToPILImage()
-    cropper = transforms.FiveCrop(128)
     psnr_lst, ssim_lst = list(), list()
     time_lst = list()
     with torch.no_grad():
@@ -272,11 +268,11 @@ if __name__ == '__main__':
     # Evaluation for Kodak24 & BSD68
     for sig in [30, 50, 70]:
         synt_model_path = "ckpt/SADNET-synt/{}/model_dict_sigma{}_epoch195.pth".format(str(sig), str(sig))
-        kodak_dataset = datasets.ImageFolder(root="/media/birdortyedi/e5042b8f-ca5e-4a22-ac68-7e69ff648bc4/SADNet-data/Kodak24",
+        kodak_dataset = datasets.ImageFolder(root="/SADNet-data/Kodak24",
                                              transform=transforms.Compose([transforms.ToTensor()]))
         kodak_image_loader = torch.utils.data.DataLoader(dataset=kodak_dataset, batch_size=1, shuffle=False)
 
-        bsd68_dataset = datasets.ImageFolder(root="/media/birdortyedi/e5042b8f-ca5e-4a22-ac68-7e69ff648bc4/SADNet-data/bsd68/",
+        bsd68_dataset = datasets.ImageFolder(root="/SADNet-data/bsd68/",
                                              transform=transforms.Compose([transforms.ToTensor()]))
         bsd68_image_loader = torch.utils.data.DataLoader(dataset=bsd68_dataset, batch_size=1, shuffle=False)
 
@@ -301,7 +297,7 @@ if __name__ == '__main__':
     model = model.cuda()
     model.eval()
 
-    im = Image.open("/home/birdortyedi/Downloads/kodak.png").convert("RGB")
+    im = Image.open("/Downloads/kodak.png").convert("RGB")
     im = transforms.ToTensor()(im).unsqueeze(0).cuda()
     noise = torch.normal(torch.zeros(im.size()), 50 / 255.0).cuda()
     noisy = im + noise
