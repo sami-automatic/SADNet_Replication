@@ -3,13 +3,13 @@ import os
 import h5py
 import torch
 import numpy as np
-import glog as log
 from datetime import datetime
 from torchvision import transforms, datasets
 import scipy.io as sio
-from datasets import SIDDTest
-from sadNet import SADNET
-from SSIM import SSIM
+from PIL import Image
+from datasets.sidd import SIDDTest
+from models.sadNet import SADNET
+from metrics.SSIM import SSIM
 
 
 class PSNR:
@@ -255,8 +255,9 @@ def eval_DND(data_folder, out_folder, is_save=True):
 
 
 if __name__ == '__main__':
-    real_model_path = "ckpt/SADNET/final_model_sadnet.pth"
-    sidd_dataset = SIDDTest("ValidationGtBlocksSrgb.mat", "ValidationNoisyBlocksSrgb.mat")
+    # Evaluation for SIDD
+    real_model_path = "../ckpt/SADNET/final_model_sadnet.pth"
+    sidd_dataset = SIDDTest("../data/ValidationGtBlocksSrgb.mat", "ValidationNoisyBlocksSrgb.mat")
     sidd_image_loader = torch.utils.data.DataLoader(dataset=sidd_dataset, batch_size=1, shuffle=False)
     model_path = real_model_path
     out_img_folder = "ckpt/SADNET/{}/{}/out-imgs"
@@ -268,55 +269,52 @@ if __name__ == '__main__':
     model.eval()
     eval(model, sidd_image_loader, out_img_folder)
 
-    # for sig in [30, 50, 70]:
-    #     synt_model_path = "ckpt/SADNET-synt/{}/model_dict_sigma{}_epoch195.pth".format(str(sig), str(sig))
-    #     kodak_dataset = datasets.ImageFolder(root="/media/birdortyedi/e5042b8f-ca5e-4a22-ac68-7e69ff648bc4/SADNet-data/Kodak24",
-    #                                          transform=transforms.Compose([transforms.ToTensor()]))
-    #     kodak_image_loader = torch.utils.data.DataLoader(dataset=kodak_dataset, batch_size=1, shuffle=False)
-    #
-    #     bsd68_dataset = datasets.ImageFolder(root="/media/birdortyedi/e5042b8f-ca5e-4a22-ac68-7e69ff648bc4/SADNet-data/bsd68/",
-    #                                          transform=transforms.Compose([transforms.ToTensor()]))
-    #     bsd68_image_loader = torch.utils.data.DataLoader(dataset=bsd68_dataset, batch_size=1, shuffle=False)
-    #
-    #     real = False
-    #     model_path = real_model_path if real else synt_model_path
-    #     out_img_folder = "ckpt/SADNET/{}/{}/out-imgs"
-    #
-    #     model = SADNET()
-    #     model_dict = torch.load(model_path)
-    #     model.load_state_dict(model_dict)
-    #     model = model.cuda()
-    #     model.eval()
-    #
-    #     eval_Kodak(kodak_image_loader, sig)
-    #     eval_bsd(bsd68_image_loader, sig)
-    # synt_model_path = "ckpt/SADNET-synt/{}/model_dict_sigma{}_epoch195.pth".format(str(50), str(50))
-    # model = SADNET()
-    # model_dict = torch.load(synt_model_path)
-    # model.load_state_dict(model_dict)
-    # model = model.cuda()
-    # model.eval()
-    #
-    # from PIL import Image
-    # im = Image.open("/home/birdortyedi/Downloads/kodak.png").convert("RGB")
-    # im = transforms.ToTensor()(im).unsqueeze(0).cuda()
-    # noise = torch.normal(torch.zeros(im.size()), 50 / 255.0).cuda()
-    # noisy = im + noise
-    # noisy = torch.clamp(noisy, 0.0, 1.0)
-    #
-    # start = datetime.now()
-    # prediction = model(noisy)
-    # time = datetime.now() - start
-    # prediction = torch.clamp(prediction, max=1., min=0.)
-    # psnr = PSNR(255. * im, 255. * prediction).item()
-    # print("PSNR: {}".format(psnr))
-    # psnr = PSNR(255. * im, 255. * noisy).item()
-    # print("PSNR noisy: {}".format(psnr))
-    # out_img_folder = "ckpt/SADNET/{}/{}/samples"
-    # os.makedirs(out_img_folder.format("kodak", 50), exist_ok=True)
+    # Evaluation for Kodak24 & BSD68
+    for sig in [30, 50, 70]:
+        synt_model_path = "ckpt/SADNET-synt/{}/model_dict_sigma{}_epoch195.pth".format(str(sig), str(sig))
+        kodak_dataset = datasets.ImageFolder(root="/media/birdortyedi/e5042b8f-ca5e-4a22-ac68-7e69ff648bc4/SADNet-data/Kodak24",
+                                             transform=transforms.Compose([transforms.ToTensor()]))
+        kodak_image_loader = torch.utils.data.DataLoader(dataset=kodak_dataset, batch_size=1, shuffle=False)
 
-    # transforms.ToPILImage()(prediction[0].cpu()).save(os.path.join(out_img_folder.format("kodak", 50), "out.png"))
-    # transforms.ToPILImage()(im[0].cpu()).save(os.path.join(out_img_folder.format("kodak", 50), "gt.png"))
-    # transforms.ToPILImage()(noisy[0].cpu()).save(os.path.join(out_img_folder.format("kodak", 50), "noisy.png"))
+        bsd68_dataset = datasets.ImageFolder(root="/media/birdortyedi/e5042b8f-ca5e-4a22-ac68-7e69ff648bc4/SADNet-data/bsd68/",
+                                             transform=transforms.Compose([transforms.ToTensor()]))
+        bsd68_image_loader = torch.utils.data.DataLoader(dataset=bsd68_dataset, batch_size=1, shuffle=False)
+
+        real = False
+        model_path = real_model_path if real else synt_model_path
+        out_img_folder = "ckpt/SADNET/{}/{}/out-imgs"
+
+        model = SADNET()
+        model_dict = torch.load(model_path)
+        model.load_state_dict(model_dict)
+        model = model.cuda()
+        model.eval()
+
+        eval_Kodak(kodak_image_loader, sig)
+        eval_bsd(bsd68_image_loader, sig)
+
+    # Single inference on Kodak24 & BSD68
+    synt_model_path = "ckpt/SADNET-synt/{}/model_dict_sigma{}_epoch195.pth".format(str(50), str(50))
+    model = SADNET()
+    model_dict = torch.load(synt_model_path)
+    model.load_state_dict(model_dict)
+    model = model.cuda()
+    model.eval()
+
+    im = Image.open("/home/birdortyedi/Downloads/kodak.png").convert("RGB")
+    im = transforms.ToTensor()(im).unsqueeze(0).cuda()
+    noise = torch.normal(torch.zeros(im.size()), 50 / 255.0).cuda()
+    noisy = im + noise
+    noisy = torch.clamp(noisy, 0.0, 1.0)
+
+    start = datetime.now()
+    prediction = model(noisy)
+    time = datetime.now() - start
+    prediction = torch.clamp(prediction, max=1., min=0.)
+    psnr = PSNR(255. * im, 255. * prediction).item()
+    print("PSNR: {}".format(psnr))
+    psnr = PSNR(255. * im, 255. * noisy).item()
+    print("PSNR noisy: {}".format(psnr))
+
     # eval_DND("/media/birdortyedi/e5042b8f-ca5e-4a22-ac68-7e69ff648bc4/SADNet-data/DND", "./ckpt/SADNET/outputs")
     # bundle_submissions_srgb("./ckpt/SADNET/outputs")
