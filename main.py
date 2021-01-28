@@ -1,20 +1,14 @@
-from models.sadNet import SADNET
 import torch
-from torch.autograd import Variable
 
-if __name__ == '__main__':
+from utils.train_utils import *
+from utils.config import *
+from engine.train import train
+
+if __name__ == "__main__":
+    # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+    cfg = argument_parser().parse_args()
     device = torch.device('cuda')
-    print(device)
-    x = torch.rand((2,3,128,128))
-    print(x.shape)
-    print(x)
+    create_dir(cfg.ckpt_dir)
+    train(cfg)
 
-    model = SADNET(32, 32)
-    model.to(device)
-    x = x.to(device)
-
-    x = Variable(x)
-    model.train()
-    out = model(x)
-    print(out.shape)
-    print(out)
