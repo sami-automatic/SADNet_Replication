@@ -16,8 +16,6 @@ For more details please visit [our reproducibilty report on OpenReview](https://
 
 ## Citation
 
-#
-
 If you find our reproducibility work useful in your study, please cite our paper as ;
 
 ```
@@ -32,8 +30,6 @@ url={https://openreview.net/forum?id=yiAI9QN9nYt}
 ```
 
 ## Acknowledgments
-
-#
 
 The blocks are adopted from [the original repo of JimmyChame](https://github.com/JimmyChame/SADNet).
 
