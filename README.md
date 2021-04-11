@@ -14,6 +14,14 @@ For more details please visit [our reproducibilty report on OpenReview](https://
 >
 > **Abstract:** In this study, we present our results and experience during replicating the paper titled "Spatial-Adaptive Network for Single Image Denoising". This paper proposes novel spatial-adaptive denoising architecture for efficient noise removal by leveraging the deformable convolutions to adapt spatial information (i.e. edges and textures). We have implemented the model from scratch in PyTorch framework, and then have conducted real and synthetic noise experiments on the corresponding datasets. We have achieved to reproduce the results qualitatively and quantitatively.
 
+## Requirements
+
+To install requirements:
+
+```setup
+pip install -r requirements.txt
+```
+
 ## Citation
 
 If you find our reproducibility work useful in your study, please cite our paper as ;
