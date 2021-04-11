@@ -16,8 +16,6 @@ For more details please visit [our reproducibilty report on OpenReview](https://
 
 ## Acknowledments
 
-#
-
 The blocks are adopted from [the original repo of JimmyChame](https://github.com/JimmyChame/SADNet).
 
 The BibTex of the original work:
